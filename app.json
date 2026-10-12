@@ -1,1 +1,25 @@
-{"expo":{"name":"Bauricordi","slug":"bauricordi","version":"1.0.0","orientation":"portrait","userInterfaceStyle":"light","android":{"package":"com.bauricordi.app"},"ios":{"bundleIdentifier":"com.bauricordi.app","supportsTablet":true},"web":{"bundler":"metro"}}}
+{
+  "expo": {
+    "name": "Bauricordi",
+    "slug": "bauricordi",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "com.bauricordi.app"
+    },
+    "ios": {
+      "bundleIdentifier": "com.bauricordi.app",
+      "supportsTablet": true
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "29e3c8de-f52f-4a89-a602-087db69571f5"
+      }
+    },
+    "owner": "deniszepp90"
+  }
+}
