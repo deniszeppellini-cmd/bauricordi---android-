@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     env:
       CI: '1'
@@ -30,11 +30,12 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Check Expo dependencies
-        run: npx expo install --check
+        run: |
+          npx expo install --fix
+          npx expo install --check
       - name: Configure EAS with existing secret
         id: eas
         continue-on-error: true
@@ -62,11 +63,12 @@ jobs:
           test -s "$APK"
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
           "$BUILD_TOOLS/apksigner" verify --verbose "$APK"
-          "$BUILD_TOOLS/aapt" dump badging "$APK" | head -20
+          "$BUILD_TOOLS/aapt" dump badging "$APK" > apk-info.txt
+          head -20 apk-info.txt
           mkdir -p artifacts
           cp "$APK" artifacts/Bauricordi-Android.apk
           sha256sum artifacts/Bauricordi-Android.apk > artifacts/SHA256.txt
-          cp app.json eas.json artifacts/
+          cp app.json eas.json package.json package-lock.json apk-info.txt artifacts/
       - uses: actions/upload-artifact@v4
         with:
           name: Bauricordi-Android
