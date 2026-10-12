@@ -1,15 +1,13 @@
-name: Build Bauricordi Android
+name: Build Bauricordi Free and Premium
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
       - '.github/workflows/build-android.yml'
-      - 'App.js'
-      - 'app.json'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'eas.json'
+      - '*.js'
+      - '*.mjs'
+      - '*.json'
 permissions:
   contents: read
 concurrency:
@@ -19,8 +17,18 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: Free-Premium
+            preview: '0'
+          - variant: Premium-Anteprima
+            preview: '1'
     env:
       CI: '1'
+      EXPO_PUBLIC_PREMIUM_DEMO: ${{ matrix.preview }}
+      EXPO_PUBLIC_REVENUECAT_ANDROID_KEY: ${{ vars.REVENUECAT_ANDROID_PUBLIC_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,55 +38,48 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Validate data, backup and Premium rules
+        run: npm test
       - name: Check Expo dependencies
-        run: |
-          npx expo install --fix
-          npx expo install --check
-      - name: Configure EAS with existing secret
-        id: eas
-        continue-on-error: true
+        run: npx expo install --check
+      - name: Verify EAS account
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: |
-          if [ -z "$EXPO_TOKEN" ]; then
-            echo "::error::EXPO_TOKEN is missing or empty."
-            exit 1
-          fi
-          npx --yes eas-cli@latest whoami
-          npx --yes eas-cli@latest init --force --non-interactive
+        run: npx --yes eas-cli@latest whoami
       - name: Export Android JavaScript bundle
         run: npx expo export --platform android --output-dir bundle-check
-      - name: Generate native Android project
+      - name: Generate Android project
         run: npx expo prebuild --platform android --no-install
-      - name: Build standalone preview APK
+      - name: Build standalone APK
         working-directory: android
+        env:
+          NODE_ENV: production
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease --no-daemon --max-workers=2 -PreactNativeArchitectures=arm64-v8a,armeabi-v7a -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g"
       - name: Verify APK package and signature
+        env:
+          VARIANT: ${{ matrix.variant }}
         run: |
           APK=android/app/build/outputs/apk/release/app-release.apk
           test -s "$APK"
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
           "$BUILD_TOOLS/apksigner" verify --verbose "$APK"
-          "$BUILD_TOOLS/aapt" dump badging "$APK" > apk-info.txt
-          head -20 apk-info.txt
           mkdir -p artifacts
-          cp "$APK" artifacts/Bauricordi-Android.apk
-          sha256sum artifacts/Bauricordi-Android.apk > artifacts/SHA256.txt
-          cp app.json eas.json package.json package-lock.json apk-info.txt artifacts/
+          "$BUILD_TOOLS/aapt" dump badging "$APK" > artifacts/apk-info.txt
+          head -20 artifacts/apk-info.txt
+          cp "$APK" "artifacts/Bauricordi-$VARIANT.apk"
+          sha256sum "artifacts/Bauricordi-$VARIANT.apk" > artifacts/SHA256.txt
+          npx expo config --type public --json > artifacts/app-config.json
       - uses: actions/upload-artifact@v4
         with:
-          name: Bauricordi-Android
+          name: Bauricordi-${{ matrix.variant }}
           path: artifacts/
           if-no-files-found: error
           retention-days: 30
       - name: Report result
-        if: always()
-        env:
-          EAS_OUTCOME: ${{ steps.eas.outcome }}
         run: |
-          echo "EAS authentication/configuration: $EAS_OUTCOME" >> "$GITHUB_STEP_SUMMARY"
-          echo "APK uses the Expo/React Native preview signing key; for installation testing only, not Play Store publication." >> "$GITHUB_STEP_SUMMARY"
+          echo "Variant: ${{ matrix.variant }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Preview signing key: installation testing only. Purchases require configured RevenueCat and store products." >> "$GITHUB_STEP_SUMMARY"
