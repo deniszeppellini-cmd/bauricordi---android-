@@ -2,11 +2,12 @@
   "expo": {
     "name": "Bauricordi",
     "slug": "bauricordi",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "android": {
-      "package": "com.bauricordi.app"
+      "package": "com.bauricordi.app",
+      "versionCode": 2
     },
     "ios": {
       "bundleIdentifier": "com.bauricordi.app",
@@ -20,6 +21,9 @@
         "projectId": "29e3c8de-f52f-4a89-a602-087db69571f5"
       }
     },
-    "owner": "deniszepp90"
+    "owner": "deniszepp90",
+    "plugins": [
+      "@react-native-community/datetimepicker"
+    ]
   }
 }

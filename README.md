@@ -1,28 +1,53 @@
-# Bauricordi Android
+# Bauricordi 1.1 — Gratis e Premium
 
-Prototipo Expo / React Native dedicato ai ricordi e alla vita dei cani.
+App Expo / React Native per il diario del cane. Foto e dati sono conservati localmente sul telefono; nessun cloud o modello IA online è attivo.
 
-## Generare e scaricare l'APK
+## Funzioni
 
-Il workflow attivo è `.github/workflows/build-android.yml`. Si avvia da Actions oppure al caricamento dei file sorgente sul ramo `main`.
+- Gratis: un cane, 20 ricordi con foto e testo, ricerca, promemoria con notifiche locali, nove missioni, scheda Dog Sitter PDF e backup completo con immagini.
+- Premium: più profili cane, ricordi oltre il limite gratuito e album PDF degli ultimi 40 ricordi.
+- Bauri locale: risponde con regole sul diario, i promemoria e le missioni del cane selezionato. Non è un modello IA e non fornisce diagnosi o dosaggi.
 
-Il workflow verifica le dipendenze Expo, utilizza il secret `EXPO_TOKEN` solo per l'autenticazione EAS, esporta il bundle JavaScript, genera il progetto Android e compila un APK autonomo. L'artefatto `Bauricordi-Android` contiene l'APK, il checksum SHA-256 e la configurazione usata.
+Gli avvisi contengono il titolo e la nota del promemoria. La consegna dipende dai permessi e dal risparmio energetico Android. È disponibile una notifica di prova a 10 secondi. Se i permessi vengono negati, il promemoria resta nel diario con stato notifica non attiva. Dopo il ripristino di un backup, salvare nuovamente i promemoria per programmare le notifiche su quel telefono.
 
-L'APK di anteprima usa la firma di test di React Native. Non richiede Expo Go o un server Metro. È destinato alla prova su telefono, non alla pubblicazione su Google Play.
+Il backup completo è limitato a 35 MB di immagini codificate. I file importati sono verificati, le foto vengono copiate nella directory privata dell'app e gli identificativi delle notifiche del vecchio telefono non vengono riutilizzati. In caso di dati illeggibili l'app non sovrascrive l'archivio.
 
-## Stato delle funzioni
+## APK e anteprima Premium
 
-Il codice attuale è un prototipo: la navigazione e il nome del cane funzionano, ma ricordi, promemoria e Bauri contengono ancora schermate dimostrative. Il nome modificato non viene ancora salvato tra gli avvii. Non sono implementati backend IA, notifiche, pagamenti o sincronizzazione.
+Il workflow `.github/workflows/build-android.yml` genera due artefatti:
 
-## Sviluppo
+- `Bauricordi-Free-Premium`: pacchetto `com.bauricordi.app`. Premium è sbloccato solo da un entitlement RevenueCat `premium` attivo e non scaduto.
+- `Bauricordi-Premium-Anteprima`: pacchetto `com.bauricordi.app.preview`. Mostra sempre il banner Anteprima e consente di provare gli extra senza acquisti. Il client RevenueCat è disattivato in questa variante.
+
+Entrambi gli APK utilizzano la chiave di test React Native e contengono il bundle JS. Sono destinati alle prove d'installazione, non alla pubblicazione su Play Store. La variante di anteprima è un'app distinta; i dati non si trasferiscono automaticamente tra i due pacchetti. Si può usare il backup per trasferirli.
+
+## Abbonamenti reali: integrazione presente, attivazione esterna necessaria
+
+La libreria `react-native-purchases` è integrata. Offerte, prezzi, acquisti e ripristino provengono dallo store via RevenueCat; non esistono acquisti simulati nella variante normale e nessuna variabile locale persistita concede Premium.
+
+Prima di vendere:
+
+1. Configurare l'app con lo stesso package su Google Play Console e App Store Connect e predisporre la firma di produzione.
+2. Collegare gli store a RevenueCat; creare entitlement `premium`, prodotti di abbonamento e un'offering corrente con pacchetti mensile/annuale e prezzi definiti dal titolare.
+3. Impostare in GitHub la variabile `REVENUECAT_ANDROID_PUBLIC_KEY` (`goog_...`) e ricompilare. Per iOS usare `EXPO_PUBLIC_REVENUECAT_IOS_KEY` (`appl_...`) nella build EAS iOS. Sono chiavi SDK pubbliche, non chiavi segrete server.
+4. Verificare su traccia di test degli store acquisto, ripristino, rinnovo, scadenza e annullamento. Pubblicare termini, privacy e contatti reali del titolare.
+
+Se la chiave o i prodotti mancano, la schermata Premium spiega che gli abbonamenti non sono attivi e non presenta un pagamento finto. La build Android non dimostra il funzionamento di un acquisto reale né verifica la build iOS.
+
+## Sviluppo e verifiche
 
 Con Node 22:
 
 ```sh
 npm ci
+npm test
 npx expo install --check
 npx expo export --platform android
 npx expo prebuild --platform android
 ```
 
-`eas.json` contiene il profilo `preview` per APK e `production` per AAB. Per le build cloud e la pubblicazione occorre configurare una chiave di firma di produzione; il token non va mai aggiunto ai sorgenti. Il vecchio ZIP e il file workflow alla radice sono archivi storici e non vengono usati dalla build attuale.
+I test verificano archivio, backup foto, recupero dopo errori di scrittura, isolamento tra profili, appuntamenti, limite gratuito ed entitlement Premium scaduti. Le notifiche, i picker, la condivisione PDF e gli acquisti necessitano anche di una prova su dispositivi/store reali.
+
+`app.json` conserva il collegamento EAS verificato; `app.config.js` aggiunge i permessi e seleziona il pacchetto di anteprima. Il secret `EXPO_TOKEN` è usato esclusivamente nel passo EAS del workflow. Non inserire chiavi server IA, token Expo o credenziali store nel client.
+
+Il vecchio ZIP e il workflow alla radice sono archivi storici e non vengono utilizzati dalla nuova build.
