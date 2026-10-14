@@ -1,4 +1,4 @@
-# Bauricordi 1.1 — Gratis e Premium
+# Bauricordi 1.2 — Gratis e Premium
 
 App Expo / React Native per il diario del cane. Foto e dati sono conservati localmente sul telefono; nessun cloud o modello IA online è attivo.
 
@@ -51,3 +51,11 @@ I test verificano archivio, backup foto, recupero dopo errori di scrittura, isol
 `app.json` conserva il collegamento EAS verificato; `app.config.js` aggiunge i permessi e seleziona il pacchetto di anteprima. Il secret `EXPO_TOKEN` è usato esclusivamente nel passo EAS del workflow. Non inserire chiavi server IA, token Expo o credenziali store nel client.
 
 Il vecchio ZIP e il workflow alla radice sono archivi storici e non vengono utilizzati dalla nuova build.
+
+## SOS di zampa (1.2)
+
+La Home apre SOS. Tutti possono chiamare il veterinario salvato e cercare pronto soccorso veterinario in Google Maps per città o zona. I risultati sono una ricerca esterna, non un elenco di turni verificati: occorre confermare telefonicamente disponibilità e orari.
+
+Premium e l’anteprima Premium possono salvare annunci di smarrimento con luogo, data e ora, recapito del proprietario e segni particolari. Il testo e il PDF con la foto attuale del Profilo si condividono attraverso il selettore nativo del telefono. Gli annunci sono inclusi nel backup e i vecchi backup restano compatibili. Il pulsante Ritrovato aggiorna lo stato locale; condividere poi l’aggiornamento con chi ha ricevuto l’annuncio. Gli annunci già salvati restano leggibili e condivisibili se Premium scade.
+
+**Limite attuale:** non vengono pubblicati annunci su un cloud e non vengono inviate notifiche automatiche agli utenti vicini. Il progetto Supabase Bauricordi è stato ripristinato, ma il suo schema pubblico è vuoto. Per il servizio di avvisi occorrono account e consenso dei destinatari, iscrizione per zona, autorizzazione Premium lato server, archivio condiviso e consegna push verificata su due dispositivi. Nessun testo dell’app afferma che questo servizio sia già attivo.

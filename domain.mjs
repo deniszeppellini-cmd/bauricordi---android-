@@ -1,10 +1,11 @@
+import { validateSosReport } from './sos.mjs';
 export const FREE_MEMORY_LIMIT = 20;
 export const SCHEMA_VERSION = 1;
 export const makeId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 export const newDog = (name = 'Il mio cane') => ({ id: makeId(), name, breed: '', birthday: '', vet: '', phone: '', notes: '', photo: null });
 export function initialState() {
   const dog = newDog('Maia');
-  return { schema: SCHEMA_VERSION, dogs: [dog], activeDogId: dog.id, memories: [], reminders: [], missions: [], chat: [] };
+  return { schema: SCHEMA_VERSION, dogs: [dog], activeDogId: dog.id, memories: [], reminders: [], missions: [], chat: [], sosReports: [] };
 }
 export function validateState(value) {
   if (!value || value.schema !== SCHEMA_VERSION || !Array.isArray(value.dogs) || !value.dogs.length || value.dogs.length > 100) throw new Error('File Bauricordi non valido.');
@@ -25,6 +26,15 @@ export function validateState(value) {
   }
   for (const message of value.chat) if (!['user', 'assistant'].includes(message.role) || !text(message.text, 8000) || !ids.has(message.dogId)) throw new Error('Conversazione non valida.');
   for (const mission of value.missions) if (!ids.has(mission.dogId) || !Number.isInteger(mission.index) || mission.index < 0 || mission.index > 8) throw new Error('Missione non valida.');
+  if (value.sosReports !== undefined) {
+    if (!Array.isArray(value.sosReports) || value.sosReports.length > 1000) throw new Error('Archivio SOS non valido.');
+    const reportIds = new Set();
+    for (const report of value.sosReports) {
+      validateSosReport(report, ids);
+      if (reportIds.has(report.id)) throw new Error('Annuncio SOS duplicato.');
+      reportIds.add(report.id);
+    }
+  }
   if (!ids.has(value.activeDogId)) throw new Error('Profilo attivo non valido.');
   return value;
 }

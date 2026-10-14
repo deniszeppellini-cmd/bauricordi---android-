@@ -8,7 +8,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "test": "node --experimental-vm-modules --test domain.test.mjs storage.test.mjs"
+    "test": "node --experimental-vm-modules --test domain.test.mjs storage.test.mjs sos.test.mjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
