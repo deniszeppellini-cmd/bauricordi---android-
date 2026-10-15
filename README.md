@@ -1,6 +1,6 @@
-# Bauricordi 1.2 — Gratis e Premium
+# Bauricordi 1.3 — Gratis e Premium
 
-App Expo / React Native per il diario del cane. Foto e dati sono conservati localmente sul telefono; nessun cloud o modello IA online è attivo.
+App Expo / React Native per il diario del cane. Diario, foto e conversazioni sono locali. Gli annunci SOS vengono inviati al cloud solo dopo conferma esplicita. L’IA online non è attiva.
 
 ## Funzioni
 
@@ -58,4 +58,20 @@ La Home apre SOS. Tutti possono chiamare il veterinario salvato e cercare pronto
 
 Premium e l’anteprima Premium possono salvare annunci di smarrimento con luogo, data e ora, recapito del proprietario e segni particolari. Il testo e il PDF con la foto attuale del Profilo si condividono attraverso il selettore nativo del telefono. Gli annunci sono inclusi nel backup e i vecchi backup restano compatibili. Il pulsante Ritrovato aggiorna lo stato locale; condividere poi l’aggiornamento con chi ha ricevuto l’annuncio. Gli annunci già salvati restano leggibili e condivisibili se Premium scade.
 
-**Limite attuale:** non vengono pubblicati annunci su un cloud e non vengono inviate notifiche automatiche agli utenti vicini. Il progetto Supabase Bauricordi è stato ripristinato, ma il suo schema pubblico è vuoto. Per il servizio di avvisi occorrono account e consenso dei destinatari, iscrizione per zona, autorizzazione Premium lato server, archivio condiviso e consegna push verificata su due dispositivi. Nessun testo dell’app afferma che questo servizio sia già attivo.
+## Comunità SOS (1.3)
+
+Lo schema Supabase `community-schema.sql` è attivo nel progetto Bauricordi. Lettura e pubblicazione richiedono un account email verificato e iscrizione alla stessa zona; non esiste accesso anonimo agli annunci. La sessione viene conservata nel portachiavi del dispositivo e non entra nei backup. Pubblicare invia esclusivamente i campi dell’annuncio e una miniatura del cane, dopo conferma.
+
+Gli aggiornamenti nell’app arrivano via Supabase Postgres Changes; una rilettura ogni 30 secondi e al ritorno in primo piano recupera cambiamenti persi. L’indicatore distingue connessione attiva e interruzioni. La pagina mostra massimo 100 annunci recenti nella zona. In anteprima gli annunci sono separati dalla versione normale. Massimo tre annunci ogni 24 ore per account; durata massima 14 giorni. Ritrovato rimuove recapito, descrizione e foto; Ritira nasconde l’annuncio agli altri iscritti. La cancellazione periodica elimina le righe scadute.
+
+La pubblicazione dal client richiede Premium o l’attivazione degli extra in anteprima. La comunità è in beta: il controllo Premium lato server e l’integrazione RevenueCat devono essere completati prima di vendere abbonamenti con un servizio cloud incluso.
+
+**Notifiche a app chiusa non attive:** il repository non contiene `google-services.json`, non ha impostato un percorso Android Firebase né configurato il servizio FCM V1 in Expo. Non è stata verificata la consegna su dispositivi. L’app descrive correttamente che la ricezione in tempo reale funziona a app aperta e connessa. Non dichiara una consegna push. L’accesso dashboard Expo e Firebase è necessario per configurare e verificare i passaggi rimanenti; non includere chiavi private nel repository.
+
+L’accesso con email usa Supabase Auth e la conferma email. Per registrazioni pubbliche occorre verificare il servizio SMTP, template/redirect di conferma, limiti e documenti del titolare. I test RLS sono stati eseguiti in una transazione annullata: non sono rimasti utenti o annunci di prova. Il controllo sicurezza del progetto non ha rilevato problemi RLS; segnala che la protezione delle password compromesse è disattivata, impostazione da gestire nell’account.
+
+## Reperibilità veterinaria ufficiale
+
+Documento dell’Ordine dei Veterinari di Bolzano consultato il 15/10/2026: per Bolzano, Merano, Val Venosta e Bressanone, sabato/domenica il Centro di contatto regionale della Croce Rossa è raggiungibile al **0471 080808**, in collaborazione con le cliniche veterinarie dell’area di Bolzano. Fonte: https://www.tieraerztekammer.com/it/download/reperibilita-veterinari-per-animali-daffezione-bolzano/ .
+
+L’app conserva questa fonte e la data di controllo, distingue i weekend nel fuso Europe/Rome e invita a controllare gli aggiornamenti e confermare prima di recarsi in clinica. Non presenta il numero come copertura feriale né inventa un veterinario attualmente di turno.
